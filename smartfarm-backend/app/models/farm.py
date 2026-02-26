@@ -18,3 +18,4 @@ class Farm(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", back_populates="farms")
+    crops = relationship("Crop", back_populates="farm", cascade="all, delete")
