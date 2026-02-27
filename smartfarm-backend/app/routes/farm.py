@@ -102,3 +102,11 @@ def delete_farm(
     db.commit()
 
     return {"message": "Farm deleted successfully"}
+
+@router.delete("/{farm_id}")
+def remove_farm(
+    farm_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return delete_farm(db, farm_id, current_user.id)

@@ -17,3 +17,4 @@ class Crop(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     farm = relationship("Farm", back_populates="crops")
+    predictions = relationship("Prediction", back_populates="crop", cascade="all, delete")

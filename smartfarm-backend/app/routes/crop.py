@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 
 from app.db.session import get_db
-from app.models.crop import Crop
-from app.models.farm import Farm
 from app.schemas.crop import CropCreate, CropResponse
 from app.routes.farm import get_current_user
+from app.services.crop_service import (
+    create_crop_for_farm,
+    get_crops_for_farm,
+    delete_crop,
+)
 
 router = APIRouter(prefix="/crops", tags=["Crops"])
 
@@ -18,46 +21,39 @@ def create_crop(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    farm = db.query(Farm).filter(Farm.id == farm_id).first()
-
-    if not farm:
-        raise HTTPException(status_code=404, detail="Farm not found")
-
-    # 🔐 Ownership check
-    if farm.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=403,
-            detail="Not authorized to add crops to this farm",
-        )
-
-    crop = Crop(
-        **crop_data.model_dump(),
-        farm_id=farm_id
+    return create_crop_for_farm(
+        db,
+        farm_id,
+        crop_data,
+        current_user.id,
     )
-
-    db.add(crop)
-    db.commit()
-    db.refresh(crop)
-
-    return crop
 
 
 @router.get("/{farm_id}", response_model=List[CropResponse])
 def get_crops_by_farm(
     farm_id: int,
+    skip: int = 0,
+    limit: int = 10,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    farm = db.query(Farm).filter(Farm.id == farm_id).first()
+    return get_crops_for_farm(
+        db,
+        farm_id,
+        current_user.id,
+        skip,
+        limit,
+    )
 
-    if not farm:
-        raise HTTPException(status_code=404, detail="Farm not found")
 
-    if farm.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=403,
-            detail="Not authorized to view crops in this farm",
-        )
-
-    crops = db.query(Crop).filter(Crop.farm_id == farm_id).all()
-    return crops
+@router.delete("/{crop_id}")
+def remove_crop(
+    crop_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return delete_crop(
+        db,
+        crop_id,
+        current_user.id,
+    )
