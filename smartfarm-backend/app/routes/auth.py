@@ -3,6 +3,11 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas.user import UserCreate, UserResponse
 from app.services.auth_service import register_user, authenticate_user, generate_token
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import HTTPException, status, Depends
+from datetime import timedelta
+from app.core.security import create_access_token
+from app.core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -32,11 +37,14 @@ async def login(request: Request, db: Session = Depends(get_db)):
 
     user = authenticate_user(db, email, password)
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password"
+        )
 
-    token = generate_token(user)
+    access_token = create_access_token(
+        data={"sub": user.email},
+        expires_delta=timedelta(minutes=60)
+    )
 
-    return {
-        "access_token": token,
-        "token_type": "bearer"
-    }
+    return {"access_token": access_token, "token_type": "bearer"}
