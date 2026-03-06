@@ -9,19 +9,10 @@ from app.core.security import get_user_from_token
 from fastapi.security import OAuth2PasswordBearer
 from app.schemas.farm import FarmUpdate
 
+from app.core.dependencies import get_current_user
+
 router = APIRouter(prefix="/farms", tags=["Farms"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
-
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    user = get_user_from_token(token)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-        )
-    return user
 
 
 @router.post("/", response_model=FarmResponse)
@@ -102,11 +93,3 @@ def delete_farm(
     db.commit()
 
     return {"message": "Farm deleted successfully"}
-
-@router.delete("/{farm_id}")
-def remove_farm(
-    farm_id: int,
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
-):
-    return delete_farm(db, farm_id, current_user.id)
