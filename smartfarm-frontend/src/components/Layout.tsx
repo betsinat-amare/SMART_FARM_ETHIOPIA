@@ -12,6 +12,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { name: "Dashboard", path: "/", icon: "📊" },
         { name: "My Farms", path: "/farms", icon: "🚜" },
         { name: "Crops", path: "/crops", icon: "🌱" },
+        { name: "Disease Detection", icon: "🔍", path: "/disease-detection" },
+        { name: "Fertilizer Advisory", icon: "🌱", path: "/fertilizer" },
+        { name: "Market Forecast", icon: "📈", path: "/market-prices" },
+        { name: "Weather Advisory", icon: "🌦️", path: "/weather" },
+        { name: "AI Assistant", icon: "🤖", path: "/assistant" },
+
+
+
+
         { name: "Marketplace", path: "/market", icon: "🏪" },
         { name: "Settings", path: "/settings", icon: "⚙️" },
     ];
@@ -41,8 +50,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             key={item.path}
                             to={item.path}
                             className={`flex items-center gap-4 px-6 py-4 transition-colors ${location.pathname === item.path
-                                    ? "bg-emerald-800 border-l-4 border-emerald-400"
-                                    : "hover:bg-emerald-800"
+                                ? "bg-emerald-800 border-l-4 border-emerald-400"
+                                : "hover:bg-emerald-800"
                                 }`}
                         >
                             <span className="text-xl">{item.icon}</span>
