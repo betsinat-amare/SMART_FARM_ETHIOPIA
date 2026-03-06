@@ -5,7 +5,16 @@ import RegisterPage from "../pages/RegisterPage";
 import DashboardPage from "../pages/DashboardPage";
 import FarmsPage from "../pages/FarmsPage";
 import CropsPage from "../pages/CropsPage";
+import AssistantPage from "../pages/AssistantPage";
+import DiseaseDetectionPage from "../pages/DiseaseDetectionPage";
+import FertilizerPage from "../pages/FertilizerPage";
+import MarketPricesPage from "../pages/MarketPricesPage";
+import WeatherPage from "../pages/WeatherPage";
 import Layout from "../components/Layout";
+
+
+
+
 
 
 
@@ -27,10 +36,18 @@ export default function AppRouter() {
             <ProtectedRoute>
               <Layout>
                 <Routes>
-                  <Route path="/" element={<DashboardPage />} />
-                  <Route path="/farms" element={<FarmsPage />} />
+                  <Route index element={<DashboardPage />} />
+                  <Route path="farms" element={<FarmsPage />} />
+                  <Route path="crops" element={<CropsPage />} />
+                  <Route path="assistant" element={<AssistantPage />} />
+                  <Route path="disease-detection" element={<DiseaseDetectionPage />} />
+                  <Route path="fertilizer" element={<FertilizerPage />} />
+                  <Route path="market-prices" element={<MarketPricesPage />} />
+                  <Route path="weather" element={<WeatherPage />} />
 
-                  <Route path="/crops" element={<CropsPage />} />
+
+
+
 
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
 
 const DashboardPage = () => {
     const { user } = useAuth();
@@ -38,10 +40,66 @@ const DashboardPage = () => {
                 ))}
             </div>
 
+            {/* AI Features Quick Access */}
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+                <div className="bg-white p-8 rounded-3xl shadow-xl border border-emerald-50 transform hover:scale-[1.02] transition-all">
+                    <div className="flex justify-between items-start mb-6">
+                        <h3 className="text-xl font-bold text-gray-900">Weather Forecast</h3>
+                        <span className="text-3xl">🌦️</span>
+                    </div>
+                    <div className="flex items-center gap-4 mb-4">
+                        <p className="text-4xl font-black text-emerald-600">23°C</p>
+                        <p className="text-gray-500 font-medium">Bishoftu Highlands</p>
+                    </div>
+                    <p className="text-sm text-emerald-800 bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                        <strong>Tip:</strong> Heavy rain expected on Thursday. Delay fertilization.
+                    </p>
+                </div>
+
+                <div className="bg-white p-8 rounded-3xl shadow-xl border border-emerald-50 transform hover:scale-[1.02] transition-all">
+                    <div className="flex justify-between items-start mb-6">
+                        <h3 className="text-xl font-bold text-gray-900">Cereal Market Prices</h3>
+                        <span className="text-3xl">📈</span>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Maize (White)</span>
+                            <span className="font-bold text-gray-900">1,240 ETB/Qt</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Teff (Magna)</span>
+                            <span className="font-bold text-gray-900">7,200 ETB/Qt</span>
+                        </div>
+                        <div className="text-xs text-emerald-600 font-bold hover:underline cursor-pointer">
+                            View full forecast →
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* AI Tools Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                {[
+                    { name: "Disease Detection", icon: "🔍", path: "/disease-detection" },
+                    { name: "Fertilizer Advisory", icon: "🌱", path: "/fertilizer" },
+                    { name: "Market Prices", icon: "📊", path: "/market-prices" },
+                    { name: "AI Assistant", icon: "🤖", path: "/assistant" },
+                ].map((tool, i) => (
+                    <Link
+                        key={i}
+                        to={tool.path}
+                        className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center hover:border-emerald-500 transition-all group"
+                    >
+                        <span className="text-3xl block mb-2 group-hover:scale-110 transition-transform">{tool.icon}</span>
+                        <span className="text-xs font-bold text-gray-700">{tool.name}</span>
+                    </Link>
+                ))}
+            </div>
+
             {/* Main Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Recent Activity */}
-                <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                     <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
                     <div className="space-y-6">
                         {[1, 2, 3].map((i) => (
