@@ -9,7 +9,3 @@ export const App = () => {
     </AuthProvider>
   );
 };
-
-
-
-// Make sure your ./App.tsx file contains: export const App = () => { ... }

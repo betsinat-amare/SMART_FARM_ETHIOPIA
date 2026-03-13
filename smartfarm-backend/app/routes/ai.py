@@ -13,38 +13,66 @@ class ChatRequest(BaseModel):
     message: str
     language: str = "en"  # "en" or "am"
 
+from google import genai
+from app.core.config import settings
+
+# Initialize Gemini Client
+client = genai.Client(api_key=settings.GOOGLE_API_KEY)
+
+# Specialized Agricultural System Prompt
+SYSTEM_PROMPT = """
+You are the SmartFarm Ethiopia AI Assistant, a world-class agricultural expert specialized in Ethiopian farming.
+Your goal is to provide accurate, actionable, and context-aware advice to farmers in Ethiopia.
+
+Key Areas of Expertise:
+1. Ethiopian Crops: Teff, Coffee (Arabica), Maize, Wheat, Barley, Sorghum, Pulses (Chickpeas, Lentils).
+2. Local Context: Knowledge of Ethiopian soil (Vertisols, Nitosols), climate zones (Dega, Weyna Dega, Kolla), and highland/lowland farming.
+3. Disease Management: Identifying and suggesting organic and chemical treatments for local diseases.
+4. Modern Techniques: Precision irrigation, soil conservation, and crop rotation.
+
+Instructions:
+- Provide advice in the language requested (Amharic or English).
+- Be polite, encouraging, and clear.
+- If you don't know something specific to a very local area, suggest consulting a local agricultural extension officer.
+- Use metric units (kilograms, hectares, liters).
+"""
+
 @router.post("/chat")
 async def chat_with_assistant(
     request: ChatRequest,
     current_user = Depends(get_current_user)
 ):
-    # This is a placeholder for actual LLM integration (e.g. Gemini)
-    # For now, it provides rule-based responses to demonstrate functionality.
-    
-    msg = request.message.lower()
-    lang = request.language
-    
-    if lang == "am":
-        if "ሰላም" in msg:
-            response = "ሰላም! እኔ የእርስዎ የSmartFarm ረዳት ነኝ። በምን ልርዳዎት?"
-        elif "ሰብል" in msg:
-            response = "ስለ ሰብልዎ ጥያቄ ካለዎት ይንገሩኝ። በሽታን ለመለየት ፎቶ ማንሳት ይችላሉ።"
+    try:
+        raw_key = settings.GOOGLE_API_KEY
+        key_exists = bool(raw_key and raw_key not in ["your_key_here", "YOUR_GEMINI_API_KEY_HERE", ""])
+        
+        if not key_exists:
+            raise ValueError("API_KEY_MISSING")
+
+        response = client.models.generate_content(
+            model=settings.GEMINI_MODEL,
+            config={'system_instruction': SYSTEM_PROMPT},
+            contents=f"{'Respond in Amharic (አማርኛ).' if request.language == 'am' else 'Respond in English.'}\n\nUser Question: {request.message}"
+        )
+        
+        return {
+            "response": response.text,
+            "language": request.language
+        }
+    except Exception as e:
+        print(f"Gemini API Error: {e}")
+        error_str = str(e).lower()
+        if "api_key_invalid" in error_str or "api_key_missing" in error_str or "not found" in error_str:
+            fallback = "ሰላም! የGemini API ቁልፍ ስላልተገኘ በጊዜያዊነት ምላሽ መስጠት አልቻልኩም። እባክዎ አስተዳዳሪውን ያነጋግሩ።" if request.language == "am" else "Hello! I'm currently in 'offline mode' because my API key is missing. Please contact the administrator to enable my full brains!"
+        elif "quota" in error_str or "exhausted" in error_str:
+            fallback = "ይቅርታ፣ የነጻ አገልግሎት አጠቃቀም ገደብዎ አልቋል። እባክዎ ጥቂት ጊዜ ቆይተው ይሞክሩ ወይም የክፍያ ገደብዎን ይፈትሹ።" if request.language == "am" else "I've hit my free-tier limit for today! Please wait a while or check your Gemini API quota at Google AI Studio."
         else:
-            response = "ጥያቄዎን ተቀብያለሁ። ስለ ግብርና ወይም ስለ ሰብልዎ ማንኛውንም ነገር ይጠይቁኝ።"
-    else:
-        if "hello" in msg or "hi" in msg:
-            response = "Hello! I am your SmartFarm assistant. How can I help you today?"
-        elif "crop" in msg or "plant" in msg:
-            response = "I can help you monitor your crops. You can also upload images for disease detection."
-        elif "weather" in msg:
-            response = "It's important to check the weather before planting. Would you like to see the forecast?"
-        else:
-            response = "I've received your query. Feel free to ask me anything about farming, fertilizer, or crop prices!"
+            fallback = "ይቅርታ፣ ችግር ተፈጥሯል። እባክዎ ቆይተው እንደገና ይሞክሩ።" if request.language == "am" else "Sorry, I encountered an error. Please try again later."
             
-    return {
-        "response": response,
-        "language": lang
-    }
+        return {
+            "response": fallback,
+            "language": request.language
+        }
 
 from app.services.ml_service import predict_disease
 
